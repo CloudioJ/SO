@@ -5,6 +5,7 @@
 #include <math.h>
 
 #define BUFFER_SIZE 1024
+#define MAX_PROCESSES 10000
 #define TRUE 1
 #define FALSE 0
 
@@ -77,6 +78,9 @@ int main(int argc, char *argv[]){
 
 void sjf(char processNames[][BUFFER_SIZE], int processTimes[], int lines, char *argv[]){
     
+    char processor1[MAX_PROCESSES] = "Processador_1\n";
+    char processor2[MAX_PROCESSES] = "Processador_2\n";
+    char info[BUFFER_SIZE];
 
     switch (*argv[2]){
         case '1':
@@ -89,8 +93,11 @@ void sjf(char processNames[][BUFFER_SIZE], int processTimes[], int lines, char *
 
                 currentTime = processTimes[t.shortestIndex];
                 processTimes[t.shortestIndex] = INT_MAX;
-                printf("%s;%d;%d\n", processNames[t.shortestIndex], startTime, currentTime + startTime);
-                startTime += t.shortestTime;
+
+                sprintf(info, "%s;%d;%d\n", processNames[t.shortestIndex], startTime, currentTime + startTime);
+                strcat(processor1, info);
+
+                startTime += currentTime;
             }
             break;
 
@@ -99,8 +106,7 @@ void sjf(char processNames[][BUFFER_SIZE], int processTimes[], int lines, char *
             Tuple t2 = {lines + 1, INT_MAX};
             int startTime1 = 0;
             int startTime2 = 0;
-            char processor1[] = "Processador_1";
-            char processor2[] = "Processador_2";
+            int done[lines];
 
             for(int i = 0; i < lines; i += 2){
                 t1 = findShortestIndex(processTimes, lines);
@@ -116,19 +122,23 @@ void sjf(char processNames[][BUFFER_SIZE], int processTimes[], int lines, char *
                 }
 
                 int currentTime2 = processTimes[t2.shortestIndex];
-
                 processTimes[t2.shortestIndex] = INT_MAX;
 
-                strcat(processor1, processNames[t1.shortestIndex]);
-                printf("%s;%d;%d\n", processNames[t1.shortestIndex], startTime1, currentTime1 + startTime1);
-                printf("Processador_2\n");
-                printf("%s;%d;%d\n", processNames[t2.shortestIndex], startTime2, currentTime2 + startTime2);
+                sprintf(info, "%s;%d;%d\n", processNames[t1.shortestIndex], startTime1, currentTime1 + startTime1);
+                strcat(processor1, info);
+
+                sprintf(info, "%s;%d;%d\n", processNames[t2.shortestIndex], startTime2, currentTime2 + startTime2);
+                strcat(processor2, info);
 
                 startTime1 += currentTime1;
                 startTime2 += currentTime2;
             }
         break;
     }
+
+    printf("GETTING HERE\n");
+    printf("%s\n", processor1);
+    printf("%s", processor2);
 }
 
 Tuple findShortestIndex(int processTimes[], int lines){
@@ -142,4 +152,14 @@ Tuple findShortestIndex(int processTimes[], int lines){
     }
 
     return time;
+}
+
+int doneCheck(int done[], int lines){
+    for(int i = 0; i < lines; ++i){
+        if (done[i] == FALSE){
+            return FALSE;
+        }
+    }
+
+    return TRUE;
 }
