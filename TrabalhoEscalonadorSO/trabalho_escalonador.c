@@ -90,7 +90,7 @@ void sjf(char processNames[][BUFFER_SIZE], int processTimes[], int lines, char *
     Processor p4 = {"Processador_4\n", {lines + 1, INT_MAX}, 0, 0, 0};
     Processor p5 = {"Processador_5\n", {lines + 1, INT_MAX}, 0, 0, 0};
 
-    int numProcessors = *argv[2] - '0';
+    int numProcessors = atoi(argv[2]);
     Processor *processors[] = {&p1, &p2, &p3, &p4, &p5};
 
     for (int i = 0; i < lines; i += numProcessors) {
