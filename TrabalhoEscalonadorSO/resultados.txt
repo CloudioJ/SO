@@ -1,0 +1,15 @@
+Processador_1
+a2;0;1
+a1;1;6
+c1;6;14
+
+Processador_2
+c2;0;2
+b3;2;9
+a3;9;19
+
+Processador_3
+b2;0;3
+b4;3;11
+b1;11;21
+

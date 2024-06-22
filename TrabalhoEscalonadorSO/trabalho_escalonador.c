@@ -24,7 +24,9 @@ typedef struct Processor {
 
 void processTask(Processor *p, char processNames[][BUFFER_SIZE], int processTimes[], int lines);
 void sjf(char processNames[][BUFFER_SIZE], int processTimes[], int lines, char *argv[]);
+char *concatenateResults(char *results, char *processorResults);
 Tuple findShortestIndex(int processTimes[], int lines);
+int saveResults(char *results);
 
 int main(int argc, char *argv[]){
     char *filename =  argv[1];
@@ -93,19 +95,29 @@ void sjf(char processNames[][BUFFER_SIZE], int processTimes[], int lines, char *
     int numProcessors = atoi(argv[2]);
     Processor *processors[] = {&p1, &p2, &p3, &p4, &p5};
 
-    for (int i = 0; i < lines; i += numProcessors) {
-        for (int j = 0; j < numProcessors; ++j) {
-            if (i + j < lines) {
+    for (int i = 0; i < lines; i += numProcessors) 
+        for (int j = 0; j < numProcessors; ++j) 
+            if (i + j < lines)
                 processTask(processors[j], processNames, processTimes, lines);
-            }
-        }
-    }
 
-    printf("%s\n", p1.processes);
-    if (numProcessors > 1) printf("%s\n", p2.processes);
-    if (numProcessors > 2) printf("%s\n", p3.processes);
-    if (numProcessors > 3) printf("%s\n", p4.processes);
-    if (numProcessors > 4) printf("%s", p5.processes);
+    char *results = (char *)malloc(1);
+
+    results[0] = '\0';
+
+    for (int i = 0; i < numProcessors; ++i) 
+        results = concatenateResults(results, processors[i]->processes);
+
+    saveResults(results);
+    free(results);
+}
+
+char *concatenateResults(char *results, char *processorResults){
+    char *newResults = (char *)malloc(strlen(results) + strlen(processorResults) + 1);
+    strcpy(newResults, results);
+    strcat(newResults, processorResults);
+    strcat(newResults, "\n");
+
+    return newResults;
 }
 
 void processTask(Processor *p, char processNames[][BUFFER_SIZE], int processTimes[], int lines) {
@@ -126,11 +138,25 @@ Tuple findShortestIndex(int processTimes[], int lines){
     Tuple time = {lines + 1, INT_MAX};
 
     for(int i = 0; i < lines; ++i){
-        if (processTimes[i] <= time.shortestTime){
+        if (processTimes[i] < time.shortestTime){
             time.shortestIndex = i;
             time.shortestTime = processTimes[i];
         }
     }
 
     return time;
+}
+
+int saveResults(char *results){
+    FILE *fp = fopen("resultados.txt", "w");
+
+    if (fp == NULL){
+        printf("Erro ao criar o arquivo resultados.txt");
+        return 1;
+    }
+
+    fprintf(fp, "%s", results);
+    fclose(fp);
+
+    return 0;
 }
