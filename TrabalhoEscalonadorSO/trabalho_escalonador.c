@@ -14,6 +14,15 @@ typedef struct Tuple {
     int shortestTime;
 } Tuple;
 
+typedef struct Processor {
+    char processes[MAX_PROCESSES];
+    Tuple time;
+    int startTime;
+    int currentTime;
+    int endTime;
+} Processor;
+
+void processTask(Processor *p, char processNames[][BUFFER_SIZE], int processTimes[], int lines);
 void sjf(char processNames[][BUFFER_SIZE], int processTimes[], int lines, char *argv[]);
 Tuple findShortestIndex(int processTimes[], int lines);
 
@@ -26,8 +35,8 @@ int main(int argc, char *argv[]){
         return 1;
     }
 
-    if (*argv[2] != '1' && *argv[2] != '2'){
-        printf("O segundo argumento deve ser 1 ou 2");
+    if (atoi(argv[2]) < 1 || atoi(argv[2]) > 5){
+        printf("O segundo argumento deve ser entre 1 e 5");
         return 1;
     }
 
@@ -46,7 +55,6 @@ int main(int argc, char *argv[]){
 
     rewind(fp);
 
-    // printf("lines: %d\n", lines);
     char processNames[lines][BUFFER_SIZE];
     int processTimes[lines];
 
@@ -57,11 +65,9 @@ int main(int argc, char *argv[]){
         last_token = strtok(buffer, delimiter_chars);
         while(last_token != NULL){
             if (i % 2 == 0){
-                strcpy(processNames[j], last_token);
-                // printf("%s\n", processNames[j]);    
+                strcpy(processNames[j], last_token);   
             } else {
                 processTimes[j] = atoi(last_token);
-                // printf("%d\n", processTimes[j]);
                 ++j;
             }
             last_token = strtok(NULL, delimiter_chars);
@@ -76,69 +82,44 @@ int main(int argc, char *argv[]){
     return 0;
 }
 
-void sjf(char processNames[][BUFFER_SIZE], int processTimes[], int lines, char *argv[]){
-    
-    char processor1[MAX_PROCESSES] = "Processador_1\n";
-    char processor2[MAX_PROCESSES] = "Processador_2\n";
-    char info[BUFFER_SIZE];
 
-    switch (*argv[2]){
-        case '1':
-            int startTime = 0;
-            int currentTime = 0;
-            Tuple t = {lines + 1, INT_MAX};
+void sjf(char processNames[][BUFFER_SIZE], int processTimes[], int lines, char *argv[]) {
+    Processor p1 = {"Processador_1\n", {lines + 1, INT_MAX}, 0, 0, 0};
+    Processor p2 = {"Processador_2\n", {lines + 1, INT_MAX}, 0, 0, 0};
+    Processor p3 = {"Processador_3\n", {lines + 1, INT_MAX}, 0, 0, 0};
+    Processor p4 = {"Processador_4\n", {lines + 1, INT_MAX}, 0, 0, 0};
+    Processor p5 = {"Processador_5\n", {lines + 1, INT_MAX}, 0, 0, 0};
 
-            for(int i = 0; i < lines; ++i){
-                t = findShortestIndex(processTimes, lines);
+    int numProcessors = *argv[2] - '0';
+    Processor *processors[] = {&p1, &p2, &p3, &p4, &p5};
 
-                currentTime = processTimes[t.shortestIndex];
-                processTimes[t.shortestIndex] = INT_MAX;
-
-                sprintf(info, "%s;%d;%d\n", processNames[t.shortestIndex], startTime, currentTime + startTime);
-                strcat(processor1, info);
-
-                startTime += currentTime;
+    for (int i = 0; i < lines; i += numProcessors) {
+        for (int j = 0; j < numProcessors; ++j) {
+            if (i + j < lines) {
+                processTask(processors[j], processNames, processTimes, lines);
             }
-            break;
-
-        case '2':
-            Tuple t1 = {lines + 1, INT_MAX};
-            Tuple t2 = {lines + 1, INT_MAX};
-            int startTime1 = 0;
-            int startTime2 = 0;
-            int done[lines];
-
-            for(int i = 0; i < lines; i += 2){
-                t1 = findShortestIndex(processTimes, lines);
-
-                int currentTime1 = processTimes[t1.shortestIndex];
-                processTimes[t1.shortestIndex] = INT_MAX;
-                
-                for(int j = 0; j < lines; ++j){
-                    if (j != t1.shortestIndex){
-                        t2 = findShortestIndex(processTimes, lines);
-                        break;
-                    }
-                }
-
-                int currentTime2 = processTimes[t2.shortestIndex];
-                processTimes[t2.shortestIndex] = INT_MAX;
-
-                sprintf(info, "%s;%d;%d\n", processNames[t1.shortestIndex], startTime1, currentTime1 + startTime1);
-                strcat(processor1, info);
-
-                sprintf(info, "%s;%d;%d\n", processNames[t2.shortestIndex], startTime2, currentTime2 + startTime2);
-                strcat(processor2, info);
-
-                startTime1 += currentTime1;
-                startTime2 += currentTime2;
-            }
-        break;
+        }
     }
 
-    printf("GETTING HERE\n");
-    printf("%s\n", processor1);
-    printf("%s", processor2);
+    printf("%s\n", p1.processes);
+    if (numProcessors > 1) printf("%s\n", p2.processes);
+    if (numProcessors > 2) printf("%s\n", p3.processes);
+    if (numProcessors > 3) printf("%s\n", p4.processes);
+    if (numProcessors > 4) printf("%s", p5.processes);
+}
+
+void processTask(Processor *p, char processNames[][BUFFER_SIZE], int processTimes[], int lines) {
+    char info[BUFFER_SIZE];
+
+    p->time = findShortestIndex(processTimes, lines);
+    p->currentTime = processTimes[p->time.shortestIndex];
+    processTimes[p->time.shortestIndex] = INT_MAX;
+
+    p->endTime = p->currentTime + p->startTime;
+    sprintf(info, "%s;%d;%d\n", processNames[p->time.shortestIndex], p->startTime, p->endTime);
+    strcat(p->processes, info);
+
+    p->startTime += p->currentTime;
 }
 
 Tuple findShortestIndex(int processTimes[], int lines){
@@ -152,14 +133,4 @@ Tuple findShortestIndex(int processTimes[], int lines){
     }
 
     return time;
-}
-
-int doneCheck(int done[], int lines){
-    for(int i = 0; i < lines; ++i){
-        if (done[i] == FALSE){
-            return FALSE;
-        }
-    }
-
-    return TRUE;
 }
