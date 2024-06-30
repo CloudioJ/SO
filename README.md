@@ -9,7 +9,8 @@ Este trabalho envolve a implementação do algoritmo de escalonamento "Shortest 
 - Suporta escalonamento em até 5 processadores.
 - Lê nomes dos processos e seus tempos a partir de um arquivo de entrada.
 - Utiliza o algoritmo SJF para encontrar a menor tarefa e atribuí-la aos processadores.
-- Salva os resultados do escalonamento em um arquivo de saída chamado resultados.txt.
+- Utiliza o algoritmo LJF para encontrar a maior tarefa e atribuí-la aos processadores.
+- Salva os resultados do escalonamento em um arquivo de saída chamado resultados.txt e resultados_ljf, respectivamente.
 
 ### Formato do Arquivo de Entrada
 
